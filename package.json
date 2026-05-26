@@ -1,0 +1,31 @@
+{
+  "name": "vaulto-etf-cli",
+  "version": "0.1.0",
+  "description": "Agent-first CLI for the Vaulto on-chain basket ETF backend. Inspect vaults and create new ETFs from any agent shell (Claude Code, Codex, etc.).",
+  "type": "module",
+  "bin": {
+    "vaulto-etf": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "AGENTS.md",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.0"
+  }
+}

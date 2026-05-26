@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+.env.local
+.reference-etf/
+*.log
+.DS_Store
