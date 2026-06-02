@@ -1,63 +1,85 @@
 /**
- * Configuration — env loading + validation.
+ * Configuration — env loading + validation. No secrets are ever printed.
  *
- * Mirrors the validation pattern from the web app's lib/vaulto-api/config.ts,
- * but adapted for a standalone CLI. No secrets are ever printed.
+ * The CLI reads chain data directly on-chain via viem, so it needs an RPC URL
+ * per chain (with public fallbacks). Write operations (rebalance, deploy) need
+ * a PRIVATE_KEY; deploy/keeper shell-outs need a local clone of the
+ * Vaulto-ETF-V2 repo at VAULTO_V2_DIR.
  */
 
 import "dotenv/config";
-
-const ENV_URL = "BASKET_ETF_API_URL";
-const ENV_TOKEN = "BASKET_ETF_API_TOKEN";
-
-/** Production basket-ETF backend — used when BASKET_ETF_API_URL is unset. */
-export const DEFAULT_API_URL =
-  "https://vaulto-api-etf-production.up.railway.app";
-
-export interface Config {
-  apiUrl: string;
-  apiToken: string;
-}
+import { existsSync } from "node:fs";
+import { type ChainInfo } from "./chains.js";
 
 export class ConfigError extends Error {
   code = "CONFIG_ERROR";
 }
 
-/** Resolve the API base URL (env or default). Always present. */
-export function getApiUrl(): string {
-  return (process.env[ENV_URL] || DEFAULT_API_URL).replace(/\/+$/, "");
+/** Resolve the RPC URL for a chain: env var, else public default. */
+export function getRpcUrl(chain: ChainInfo): string {
+  return (process.env[chain.rpcEnv] || chain.defaultRpc).replace(/\/+$/, "");
+}
+
+/** True if a chain-specific RPC env var is set (vs. falling back to public). */
+export function hasCustomRpc(chain: ChainInfo): boolean {
+  return !!process.env[chain.rpcEnv];
 }
 
 /**
- * Resolve the API token. Throws ConfigError if missing — callers for
- * token-requiring commands should let this propagate to the error handler.
+ * Resolve the signer private key. Throws ConfigError if missing — only
+ * write commands (rebalance start/settle) require it.
  */
-export function requireToken(): string {
-  const token = process.env[ENV_TOKEN];
-  if (!token) {
+export function requireSigner(): `0x${string}` {
+  const pk = process.env.PRIVATE_KEY;
+  if (!pk) {
     throw new ConfigError(
-      `Missing ${ENV_TOKEN}. Set it in your environment or a .env file ` +
-        `(see .env.example). Required for all commands except 'tokens' and 'describe'.`
+      "Missing PRIVATE_KEY. Set it in your environment or a .env file. " +
+        "Required only for write operations (rebalance start/settle, deploy)."
     );
   }
-  return token;
+  if (!/^0x[0-9a-fA-F]{64}$/.test(pk)) {
+    throw new ConfigError("PRIVATE_KEY must be a 0x-prefixed 32-byte hex string.");
+  }
+  return pk as `0x${string}`;
 }
 
-/** Full config for commands that hit the backend. */
-export function loadConfig(): Config {
-  return { apiUrl: getApiUrl(), apiToken: requireToken() };
+/** True if a signer is configured (without exposing it). */
+export function hasSigner(): boolean {
+  return !!process.env.PRIVATE_KEY;
+}
+
+/**
+ * Resolve the path to a local Vaulto-ETF-V2 checkout — required for `deploy`
+ * (forge scripts) and `keeper` (npm scripts). Throws if unset or missing.
+ */
+export function requireV2Dir(): string {
+  const dir = process.env.VAULTO_V2_DIR;
+  if (!dir) {
+    throw new ConfigError(
+      "Missing VAULTO_V2_DIR. Set it to a local clone of github.com/VaultoAI/Vaulto-ETF-V2. " +
+        "Required for `deploy` and `keeper`."
+    );
+  }
+  if (!existsSync(dir)) {
+    throw new ConfigError(`VAULTO_V2_DIR does not exist: ${dir}`);
+  }
+  return dir;
+}
+
+export function v2Dir(): string | undefined {
+  return process.env.VAULTO_V2_DIR;
 }
 
 /** Non-secret view of config state, for `doctor`. */
 export function configDebug(): {
-  apiUrl: string;
-  tokenConfigured: boolean;
-  tokenLength: number;
+  signerConfigured: boolean;
+  v2DirConfigured: boolean;
+  v2Dir: string | null;
 } {
-  const token = process.env[ENV_TOKEN] || "";
+  const dir = process.env.VAULTO_V2_DIR;
   return {
-    apiUrl: getApiUrl(),
-    tokenConfigured: !!token,
-    tokenLength: token.length,
+    signerConfigured: hasSigner(),
+    v2DirConfigured: !!dir,
+    v2Dir: dir ? dir : null,
   };
 }

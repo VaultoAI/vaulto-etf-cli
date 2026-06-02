@@ -3,5 +3,6 @@ dist/
 .env
 .env.local
 .reference-etf/
+.reference-v2/
 *.log
 .DS_Store

@@ -1,14 +1,33 @@
-import { SUPPORTED_TOKENS } from "../client.js";
+import { getChainBySlug, CHAINS, type ChainInfo } from "../chains.js";
 import { emit, pad, type OutputOpts } from "../output.js";
+import type { Selector } from "../cli.js";
 
-/** Print the create-vault asset allowlist. No backend call, no token needed. */
-export async function tokens(opts: OutputOpts): Promise<void> {
-  emit([...SUPPORTED_TOKENS], opts, (list: typeof SUPPORTED_TOKENS) => {
-    const lines = [`${pad("SYMBOL", 8)}${pad("DECIMALS", 10)}ADDRESS`];
-    for (const t of list) {
-      lines.push(pad(t.symbol, 8) + pad(t.decimals, 10) + t.address);
+/** Token registry for a chain (or all chains). No chain calls. */
+export async function tokens(opts: OutputOpts, sel: Selector): Promise<void> {
+  const chains: ChainInfo[] = sel.chain ? [getChainBySlug(sel.chain)] : [...CHAINS];
+
+  const result = chains.map((c) => ({
+    chain: c.slug,
+    chainId: c.id,
+    tokens: c.tokens.map((t) => ({
+      symbol: t.symbol,
+      name: t.name,
+      address: t.address,
+      decimals: t.decimals,
+      feed: t.feed,
+    })),
+  }));
+
+  emit(result, opts, (rows: typeof result) => {
+    const lines: string[] = [];
+    for (const c of rows) {
+      lines.push(`# ${c.chain} (${c.chainId})`);
+      lines.push(`${pad("SYMBOL", 9)}${pad("DEC", 5)}ADDRESS`);
+      for (const t of c.tokens) {
+        lines.push(pad(t.symbol, 9) + pad(t.decimals, 5) + t.address);
+      }
+      lines.push("");
     }
-    lines.push("", "Note: v1 allowlist is WETH + USDC only.");
-    return lines.join("\n");
+    return lines.join("\n").trimEnd();
   });
 }

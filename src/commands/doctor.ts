@@ -1,44 +1,48 @@
-import { configDebug, getApiUrl } from "../config.js";
-import { fetchRawVault } from "../client.js";
+import { configDebug } from "../config.js";
+import { CHAINS } from "../chains.js";
+import { getPublicClient } from "../onchain.js";
 import { emit, type OutputOpts } from "../output.js";
 
-/** Verify config + backend reachability without leaking the token. */
+/** Verify RPC reachability per chain + config presence (never leaks the key). */
 export async function doctor(opts: OutputOpts): Promise<void> {
   const cfg = configDebug();
-  let reachable = false;
-  let vaultName: string | null = null;
-  let reachError: string | null = null;
 
-  if (cfg.tokenConfigured) {
-    try {
-      const v = await fetchRawVault({ apiUrl: getApiUrl(), apiToken: process.env.BASKET_ETF_API_TOKEN! });
-      reachable = true;
-      vaultName = v.name;
-    } catch (e) {
-      reachError = e instanceof Error ? e.message : String(e);
-    }
-  }
+  const chains = await Promise.all(
+    CHAINS.map(async (c) => {
+      try {
+        const block = await getPublicClient(c.id).getBlockNumber();
+        return { chain: c.slug, chainId: c.id, reachable: true, blockNumber: block.toString(), error: null as string | null };
+      } catch (e) {
+        return {
+          chain: c.slug,
+          chainId: c.id,
+          reachable: false,
+          blockNumber: null as string | null,
+          error: e instanceof Error ? e.message : String(e),
+        };
+      }
+    })
+  );
 
+  const allReachable = chains.every((c) => c.reachable);
   const result = {
-    apiUrl: cfg.apiUrl,
-    tokenConfigured: cfg.tokenConfigured,
-    tokenLength: cfg.tokenLength,
-    backendReachable: reachable,
-    sampleVaultName: vaultName,
-    error: reachError,
-    ok: cfg.tokenConfigured && reachable,
+    chains,
+    signerConfigured: cfg.signerConfigured,
+    v2DirConfigured: cfg.v2DirConfigured,
+    v2Dir: cfg.v2Dir,
+    ok: allReachable,
   };
 
   emit(result, opts, (r) =>
     [
-      `API URL:           ${r.apiUrl}`,
-      `Token configured:  ${r.tokenConfigured ? `yes (${r.tokenLength} chars)` : "NO"}`,
-      `Backend reachable: ${r.backendReachable ? "yes" : "no"}`,
-      r.sampleVaultName ? `Sample vault:      ${r.sampleVaultName}` : null,
-      r.error ? `Error:             ${r.error}` : null,
-      `Status:            ${r.ok ? "OK" : "NOT READY"}`,
-    ]
-      .filter(Boolean)
-      .join("\n")
+      "RPC reachability:",
+      ...r.chains.map(
+        (c: (typeof chains)[number]) =>
+          `  ${c.chain.padEnd(6)} ${c.reachable ? `OK (block ${c.blockNumber})` : `FAIL: ${c.error}`}`
+      ),
+      `Signer (PRIVATE_KEY): ${r.signerConfigured ? "configured" : "not set"}`,
+      `VAULTO_V2_DIR:        ${r.v2DirConfigured ? r.v2Dir : "not set"}`,
+      `Status:               ${r.ok ? "OK" : "DEGRADED"}`,
+    ].join("\n")
   );
 }

@@ -1,24 +1,33 @@
 #!/usr/bin/env node
 /**
- * vaulto-etf — agent-first CLI for the Vaulto basket-ETF backend.
+ * vaulto-etf — agent-first CLI for Vaulto V2 on-chain basket ETFs.
  *
- * Design for agents: JSON stdout by default, no interactive prompts, errors
- * to stderr as JSON with a non-zero exit code. `describe` dumps the schema.
+ * Reads vault data directly on-chain (viem) across Base + BNB Chain. Design for
+ * agents: JSON stdout by default, no interactive prompts, errors to stderr as
+ * JSON with a non-zero exit code. `describe` dumps the schema.
  */
 
 import { COMMANDS, GLOBAL_FLAGS } from "./spec.js";
 import { fail, type OutputOpts } from "./output.js";
 import { doctor } from "./commands/doctor.js";
-import { state, vault } from "./commands/state.js";
+import { vaultsCmd } from "./commands/vaults.js";
+import { tokens } from "./commands/tokens.js";
+import { state } from "./commands/state.js";
 import { previewMint, previewRedeem } from "./commands/preview.js";
 import { position } from "./commands/position.js";
-import { tokens } from "./commands/tokens.js";
-import { createVaultCommand } from "./commands/createVault.js";
+import { rebalance } from "./commands/rebalance.js";
+import { deploy } from "./commands/deploy.js";
+import { keeper } from "./commands/keeper.js";
 import { describe } from "./commands/describe.js";
+
+/** Optional vault/chain selector, parsed from global flags. */
+export interface Selector {
+  vault?: string;
+  chain?: string;
+}
 
 interface ParsedArgs {
   positional: string[];
-  /** string values, or `true` for boolean flags; repeatable flags → string[]. */
   flags: Record<string, string | boolean | string[]>;
 }
 
@@ -26,7 +35,7 @@ interface ParsedArgs {
 function parseArgs(argv: string[]): ParsedArgs {
   const positional: string[] = [];
   const flags: Record<string, string | boolean | string[]> = {};
-  const valueFlags = new Set<string>();
+  const valueFlags = new Set<string>(["vault", "chain"]);
   const repeatable = new Set<string>();
   for (const c of COMMANDS) {
     for (const f of c.flags ?? []) {
@@ -34,6 +43,9 @@ function parseArgs(argv: string[]): ParsedArgs {
       if (f.takesValue) valueFlags.add(key);
       if (f.repeatable) repeatable.add(key);
     }
+  }
+  for (const f of GLOBAL_FLAGS) {
+    if (f.takesValue) valueFlags.add(f.name.replace(/^--/, ""));
   }
 
   for (let i = 0; i < argv.length; i++) {
@@ -66,17 +78,12 @@ function parseArgs(argv: string[]): ParsedArgs {
 function str(v: string | boolean | string[] | undefined): string | undefined {
   return typeof v === "string" ? v : undefined;
 }
-function arr(v: string | boolean | string[] | undefined): string[] {
-  if (Array.isArray(v)) return v;
-  if (typeof v === "string") return [v];
-  return [];
-}
 
 function printHelp(): void {
   const lines = [
-    "vaulto-etf — agent CLI for the Vaulto basket-ETF backend",
+    "vaulto-etf — agent CLI for Vaulto V2 on-chain basket ETFs (Base + BNB)",
     "",
-    "Usage: vaulto-etf <command> [flags]",
+    "Usage: vaulto-etf <command> [--vault <slug>] [--chain <slug>] [flags]",
     "",
     "Commands:",
   ];
@@ -85,8 +92,9 @@ function printHelp(): void {
     lines.push(`  ${c.name.padEnd(w)}${c.summary}`);
   }
   lines.push("", "Global flags:");
+  const gw = Math.max(...GLOBAL_FLAGS.map((f) => f.name.length)) + 2;
   for (const f of GLOBAL_FLAGS) {
-    lines.push(`  ${f.name.padEnd(w)}${f.description}`);
+    lines.push(`  ${f.name.padEnd(gw)}${f.description}`);
   }
   lines.push("", "Run `vaulto-etf describe` for the full JSON schema.");
   process.stdout.write(lines.join("\n") + "\n");
@@ -103,6 +111,7 @@ async function main(): Promise<void> {
 
   const { positional, flags } = parseArgs(argv.slice(1));
   const opts: OutputOpts = { human: flags["human"] === true && flags["json"] !== true };
+  const sel: Selector = { vault: str(flags["vault"]), chain: str(flags["chain"]) };
 
   if (flags["help"] === true) {
     printHelp();
@@ -112,27 +121,36 @@ async function main(): Promise<void> {
   switch (command) {
     case "doctor":
       return doctor(opts);
-    case "state":
-      return state(opts);
-    case "vault":
-      return vault(opts);
-    case "preview-mint":
-      return previewMint(opts, str(flags["shares"]));
-    case "preview-redeem":
-      return previewRedeem(opts, str(flags["shares"]));
-    case "position":
-      return position(opts, positional[0]);
+    case "vaults":
+      return vaultsCmd(opts);
     case "tokens":
-      return tokens(opts);
-    case "create-vault":
-      return createVaultCommand(opts, {
-        name: str(flags["name"]),
-        symbol: str(flags["symbol"]),
-        description: str(flags["description"]),
-        creator: str(flags["creator"]),
-        asset: arr(flags["asset"]),
+      return tokens(opts, sel);
+    case "state":
+      return state(opts, sel);
+    case "preview-mint":
+      return previewMint(opts, sel, str(flags["shares"]));
+    case "preview-redeem":
+      return previewRedeem(opts, sel, str(flags["shares"]));
+    case "position":
+      return position(opts, sel, positional[0]);
+    case "rebalance":
+      return rebalance(opts, sel, positional[0], {
+        sell: str(flags["sell"]),
+        buy: str(flags["buy"]),
+        sellAmount: str(flags["sell-amount"]),
+        minBuy: str(flags["min-buy"]),
+        validFor: str(flags["valid-for"]),
         confirm: flags["confirm"] === true,
       });
+    case "deploy":
+      return deploy(opts, sel, {
+        script: str(flags["script"]),
+        rpc: str(flags["rpc"]),
+        broadcast: flags["broadcast"] === true,
+        confirm: flags["confirm"] === true,
+      });
+    case "keeper":
+      return keeper(opts, sel, positional[0]);
     case "describe":
       return describe(opts);
     default:

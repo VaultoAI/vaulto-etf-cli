@@ -1,29 +1,31 @@
-import { loadConfig, ConfigError } from "../config.js";
-import { fetchUserPosition } from "../client.js";
+import { resolveVault } from "../vaults.js";
+import { userPosition } from "../onchain.js";
 import { emit, pad, usd, type OutputOpts } from "../output.js";
+import type { Selector } from "../cli.js";
+import type { Address } from "viem";
 
-/** User position in the vault: shares, %, underlying holdings. */
-export async function position(
-  opts: OutputOpts,
-  address: string | undefined
-): Promise<void> {
-  if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-    throw new ConfigError(
-      "A wallet address is required: vaulto-etf position <0x-address>"
-    );
-  }
-  const cfg = loadConfig();
-  const data = await fetchUserPosition(cfg, address);
+class InputError extends Error {
+  code = "INPUT_ERROR";
+}
 
-  emit(data, opts, (d) => {
+export async function position(opts: OutputOpts, sel: Selector, address: string | undefined): Promise<void> {
+  if (!address) throw new InputError("Missing address argument. Usage: vaulto-etf position 0x...");
+  if (!/^0x[0-9a-fA-F]{40}$/.test(address)) throw new InputError(`Invalid 0x address: ${address}`);
+
+  const v = resolveVault(sel);
+  const p = await userPosition(v, address as Address);
+
+  emit(p, opts, (d: typeof p) => {
     const lines = [
-      `Address: ${d.userAddress}`,
-      `Shares: ${d.sharesFormatted} (${d.sharePercent.toFixed(4)}% of supply)   Value: ${usd(d.totalValueUsd)}`,
+      `Position of ${d.address}`,
+      `Vault:    ${d.vault}`,
+      `Shares:   ${d.shares} (${d.sharePercent.toFixed(4)}% of supply)`,
+      `Value:    ${usd(d.totalValueUsd)}`,
       "",
-      `${pad("TOKEN", 8)}${pad("AMOUNT", 22)}VALUE`,
+      `${pad("ASSET", 9)}${pad("AMOUNT", 22)}VALUE`,
     ];
     for (const u of d.underlying) {
-      lines.push(pad(u.symbol, 8) + pad(u.amount, 22) + usd(u.valueUsd));
+      lines.push(pad(u.symbol, 9) + pad(String(u.amount), 22) + usd(u.valueUsd));
     }
     return lines.join("\n");
   });

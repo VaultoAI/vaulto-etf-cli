@@ -15,5 +15,5 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", ".reference-etf"]
+  "exclude": ["node_modules", "dist", ".reference-v2"]
 }
