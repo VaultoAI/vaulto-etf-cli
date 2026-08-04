@@ -11,17 +11,17 @@ everything is **on-chain via viem** (Base, BNB Chain, Robinhood Chain).
 ## Install (first step)
 
 ```bash
-# preferred (scoped package)
-npm install -g @vaulto/etf-cli
+# npm package: etf-cli  →  binary: vaulto-cli
+npm install -g etf-cli
 
 # one-shot
-npx @vaulto/etf-cli doctor
+npx etf-cli doctor
 
-# from GitHub if registry package is not yet published
+# from GitHub if not yet on the registry
 npm install -g github:VaultoAI/vaulto-etf-cli
 ```
 
-Binary name: **`vaulto-cli`** (not `vaulto-etf`).
+Binary name: **`vaulto-cli`**.
 
 ```bash
 vaulto-cli doctor      # RPC + config check

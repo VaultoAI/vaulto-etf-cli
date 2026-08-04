@@ -6,12 +6,12 @@ import { emit } from "../output.js";
 export async function describe(opts) {
     emit({
         tool: "vaulto-cli",
-        description: "Agent CLI for Vaulto on-chain basket ETFs. Install: npm i -g @vaulto/etf-cli  OR  npx @vaulto/etf-cli. " +
+        description: "Agent CLI for Vaulto on-chain basket ETFs. Install: npm i -g etf-cli  OR  npx etf-cli. " +
             "JSON stdout, errors on stderr. Reads vaults on Base/BNB/RH; mint/redeem shares; zap USDG on RH; rebalance; factory; deploy; keeper. " +
             "Start with: vaulto-cli describe | vaulto-cli doctor | vaulto-cli vaults.",
         install: {
-            npm: "npm install -g @vaulto/etf-cli",
-            npx: "npx @vaulto/etf-cli <command>",
+            npm: "npm install -g etf-cli",
+            npx: "npx etf-cli <command>",
             github: "npm install -g github:VaultoAI/vaulto-etf-cli",
             docs: "AGENTS.md (shipped with package)",
         },
