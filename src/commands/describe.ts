@@ -15,14 +15,15 @@ export async function describe(opts: OutputOpts): Promise<void> {
       install: {
         package: "@vaultoai/etf-cli",
         binary: "vaulto-cli",
-        registry: "https://npm.pkg.github.com",
-        npm: "npm install -g @vaultoai/etf-cli",
-        npx: "npx @vaultoai/etf-cli <command>",
+        preferred: "npm install -g github:VaultoAI/vaulto-etf-cli",
         github: "npm install -g github:VaultoAI/vaulto-etf-cli",
+        packages: "npm install -g @vaultoai/etf-cli",
+        registry: "https://npm.pkg.github.com",
         npmrc: [
           "@vaultoai:registry=https://npm.pkg.github.com",
           "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}",
         ],
+        note: "Repo is public. Git install needs no token. GitHub Packages npm still expects a read:packages token.",
         docs: "AGENTS.md (shipped with package)",
       },
       userFlows: {

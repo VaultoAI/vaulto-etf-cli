@@ -12,29 +12,20 @@ and **Robinhood Chain**. No backend API; all reads/writes are on-chain (viem).
 
 ## Install
 
-Package **`@vaultoai/etf-cli`** is published to **GitHub Packages** under the VaultoAI org.
-Binary: **`vaulto-cli`**.
+Repo is **public**. Package **`@vaultoai/etf-cli`** is on [GitHub Packages](https://github.com/orgs/VaultoAI/packages/npm/package/etf-cli) under VaultoAI. Binary: **`vaulto-cli`**.
 
 ```bash
-# Configure npm for the @vaultoai scope (once per machine)
+# Easiest — public git install (no token)
+npm install -g github:VaultoAI/vaulto-etf-cli
+vaulto-cli doctor
+
+# GitHub Packages (token with read:packages)
 echo "@vaultoai:registry=https://npm.pkg.github.com" >> ~/.npmrc
 echo "//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN" >> ~/.npmrc
-# Token needs read:packages — https://github.com/settings/tokens
-
 npm install -g @vaultoai/etf-cli
-npx @vaultoai/etf-cli doctor
-
-# Or install from the git repo (no Packages auth)
-npm install -g github:VaultoAI/vaulto-etf-cli
 ```
 
 Requires Node 18+.
-
-```bash
-vaulto-cli doctor
-vaulto-cli describe    # machine schema
-vaulto-cli vaults      # deposit addresses
-```
 
 ## Configure
 
