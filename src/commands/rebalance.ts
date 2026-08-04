@@ -1,7 +1,8 @@
 import { resolveVault, type VaultInfo } from "../vaults.js";
-import { getChainById } from "../chains.js";
+import { findTokenBySymbol, getChainById } from "../chains.js";
 import {
   rebalanceStatus,
+  sendExecuteSwap,
   sendSettleRebalance,
   sendStartRebalance,
   type StartRebalanceParams,
@@ -30,13 +31,19 @@ export interface RebalanceFlags {
 function resolveToken(v: VaultInfo, ref: string | undefined, label: string): Address {
   if (!ref) throw new InputError(`Missing --${label}.`);
   if (/^0x[0-9a-fA-F]{40}$/.test(ref)) return ref as Address;
-  const bySymbol = getChainById(v.chainId).tokens.find(
-    (x) => x.symbol.toLowerCase() === ref.toLowerCase()
-  );
+  const bySymbol = findTokenBySymbol(v.chainId, ref);
   if (bySymbol) return bySymbol.address as Address;
   throw new InputError(`Unknown token "${ref}" on chain ${v.chainId}. Use a symbol or 0x address.`);
 }
 
+/**
+ * Rebalance ops.
+ * Subcommands:
+ *   status  — read (all vaults)
+ *   start   — CoW authorize (cow vaults only)
+ *   settle  — CoW finalize (cow vaults only)
+ *   execute — V4 atomic swap (v4 vaults only)
+ */
 export async function rebalance(
   opts: OutputOpts,
   sel: Selector,
@@ -51,23 +58,36 @@ export async function rebalance(
     emit(s, opts, (d: typeof s) =>
       [
         `Vault:        ${d.vault}`,
+        `Kind:         ${d.kind}`,
         `Needs rebal:  ${d.needsRebalance}`,
         `Active:       ${d.rebalanceActive}`,
-        `Nonce:        ${d.rebalanceNonce}`,
+        `Nonce:        ${d.rebalanceNonce ?? "n/a"}`,
         `Drift thresh: ${d.driftThresholdPct.toFixed(2)}%`,
         `Min buy:      ${d.minBuyRatioPct.toFixed(2)}%`,
         d.active
           ? `Active order: sell ${d.active.sellAmount} ${d.active.sellToken} -> >=${d.active.minBuyAmount} ${d.active.buyToken} (validTo ${d.active.validTo})`
           : "Active order: none",
+        d.kind === "v4"
+          ? "Note: V4 vaults use `rebalance execute` (atomic Uniswap swap). Prefer `vaulto-etf keeper`."
+          : "Note: CoW vaults use start → CoW API → settle. Prefer `vaulto-etf keeper`.",
       ].join("\n")
     );
     return;
   }
 
   if (action === "settle") {
+    if (v.kind !== "cow") {
+      throw new InputError(`settle is CoW-only. Vault ${v.slug} is kind=${v.kind}. Use: rebalance execute`);
+    }
     if (!flags.confirm) {
       emit(
-        { dryRun: true, action: "settleRebalance", vault: v.vault, controller: v.controller, note: "Re-run with --confirm to send. Requires PRIVATE_KEY with EXECUTOR_ROLE." },
+        {
+          dryRun: true,
+          action: "settleRebalance",
+          vault: v.vault,
+          controller: v.controller,
+          note: "Re-run with --confirm to send. Requires PRIVATE_KEY with EXECUTOR_ROLE.",
+        },
         opts
       );
       return;
@@ -78,6 +98,9 @@ export async function rebalance(
   }
 
   if (action === "start") {
+    if (v.kind !== "cow") {
+      throw new InputError(`start is CoW-only. Vault ${v.slug} is kind=${v.kind}. Use: rebalance execute`);
+    }
     const params: StartRebalanceParams = {
       sellToken: resolveToken(v, flags.sell, "sell"),
       buyToken: resolveToken(v, flags.buy, "buy"),
@@ -93,8 +116,12 @@ export async function rebalance(
           action: "startRebalance",
           vault: v.vault,
           controller: v.controller,
-          params: { ...params, sellAmount: params.sellAmount.toString(), minBuyAmount: params.minBuyAmount.toString() },
-          note: "Re-run with --confirm to send. NOTE: authorizing on-chain is not enough — the CoW order must also be submitted to the CoW API and settled. Prefer `vaulto-etf keeper`.",
+          params: {
+            ...params,
+            sellAmount: params.sellAmount.toString(),
+            minBuyAmount: params.minBuyAmount.toString(),
+          },
+          note: "Re-run with --confirm to send. Prefer `vaulto-etf keeper` (handles CoW API + settle).",
         },
         opts
       );
@@ -105,7 +132,41 @@ export async function rebalance(
     return;
   }
 
-  throw new InputError(`Unknown rebalance subcommand: ${action}. Use status | start | settle.`);
+  if (action === "execute") {
+    if (v.kind !== "v4") {
+      throw new InputError(`execute is V4-only. Vault ${v.slug} is kind=${v.kind}. Use: rebalance start/settle`);
+    }
+    const params = {
+      sellToken: resolveToken(v, flags.sell, "sell"),
+      buyToken: resolveToken(v, flags.buy, "buy"),
+      sellAmount: BigInt(requireUint(flags.sellAmount, "sell-amount")),
+      minBuyAmount: BigInt(requireUint(flags.minBuy, "min-buy")),
+    };
+    if (!flags.confirm) {
+      emit(
+        {
+          dryRun: true,
+          action: "executeSwap",
+          vault: v.vault,
+          handler: v.handler,
+          chain: getChainById(v.chainId).slug,
+          params: {
+            ...params,
+            sellAmount: params.sellAmount.toString(),
+            minBuyAmount: params.minBuyAmount.toString(),
+          },
+          note: "Re-run with --confirm to send. Requires PRIVATE_KEY with EXECUTOR_ROLE on the V4 handler. Prefer `vaulto-etf keeper`.",
+        },
+        opts
+      );
+      return;
+    }
+    const hash = await sendExecuteSwap(v, params);
+    emit({ action: "executeSwap", vault: v.vault, handler: v.handler, txHash: hash }, opts);
+    return;
+  }
+
+  throw new InputError(`Unknown rebalance subcommand: ${action}. Use status | start | settle | execute.`);
 }
 
 function requireUint(v: string | undefined, label: string): string {
@@ -114,7 +175,6 @@ function requireUint(v: string | undefined, label: string): string {
   return v;
 }
 
-// validTo must be a future unix timestamp; Date is fine here (CLI is short-lived).
 function nowSecs(): number {
   return Date.now() / 1000;
 }

@@ -11,19 +11,21 @@ export async function vaultsCmd(opts: OutputOpts): Promise<void> {
       name: v.name,
       chain: chain.slug,
       chainId: v.chainId,
+      kind: v.kind,
       vault: v.vault,
-      controller: v.controller,
+      controller: v.controller || null,
       handler: v.handler,
+      zapper: v.zapper ?? null,
       note: v.note ?? null,
       explorer: explorerAddrUrl(v.chainId, v.vault),
     };
   });
 
   emit(list, opts, (rows: typeof list) => {
-    const lines = [`${pad("SLUG", 8)}${pad("CHAIN", 7)}${pad("NAME", 24)}VAULT`];
+    const lines = [`${pad("SLUG", 10)}${pad("CHAIN", 6)}${pad("KIND", 5)}${pad("NAME", 26)}VAULT`];
     for (const r of rows) {
-      lines.push(pad(r.slug, 8) + pad(r.chain, 7) + pad(r.name, 24) + r.vault);
-      if (r.note) lines.push(`        ${r.note}`);
+      lines.push(pad(r.slug, 10) + pad(r.chain, 6) + pad(r.kind, 5) + pad(r.name, 26) + r.vault);
+      if (r.note) lines.push(`          ${r.note}`);
     }
     return lines.join("\n");
   });

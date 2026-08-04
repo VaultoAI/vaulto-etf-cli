@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * vaulto-etf — agent-first CLI for Vaulto V2 on-chain basket ETFs.
+ * vaulto-etf — agent-first CLI for Vaulto on-chain basket ETFs
+ * (DavidVaulto/ETFs: Base + BNB + Robinhood Chain).
  *
- * Reads vault data directly on-chain (viem) across Base + BNB Chain. Design for
- * agents: JSON stdout by default, no interactive prompts, errors to stderr as
- * JSON with a non-zero exit code. `describe` dumps the schema.
+ * Reads vault data directly on-chain (viem). Design for agents: JSON stdout by
+ * default, no interactive prompts, errors to stderr as JSON with a non-zero
+ * exit code. `describe` dumps the schema.
  */
 
 import { COMMANDS, GLOBAL_FLAGS } from "./spec.js";
@@ -16,6 +17,12 @@ import { state } from "./commands/state.js";
 import { previewMint, previewRedeem } from "./commands/preview.js";
 import { position } from "./commands/position.js";
 import { rebalance } from "./commands/rebalance.js";
+import { factory } from "./commands/factory.js";
+import { zap } from "./commands/zap.js";
+import { mint } from "./commands/mint.js";
+import { redeemCmd } from "./commands/redeem.js";
+import { approve } from "./commands/approve.js";
+import { balances } from "./commands/balances.js";
 import { deploy } from "./commands/deploy.js";
 import { keeper } from "./commands/keeper.js";
 import { describe } from "./commands/describe.js";
@@ -81,7 +88,7 @@ function str(v: string | boolean | string[] | undefined): string | undefined {
 
 function printHelp(): void {
   const lines = [
-    "vaulto-etf — agent CLI for Vaulto V2 on-chain basket ETFs (Base + BNB)",
+    "vaulto-etf — agent CLI for Vaulto on-chain basket ETFs (Base + BNB + Robinhood)",
     "",
     "Usage: vaulto-etf <command> [--vault <slug>] [--chain <slug>] [flags]",
     "",
@@ -142,6 +149,52 @@ async function main(): Promise<void> {
         validFor: str(flags["valid-for"]),
         confirm: flags["confirm"] === true,
       });
+    case "factory":
+      return factory(opts, sel, positional[0], {
+        name: str(flags["name"]),
+        symbol: str(flags["symbol"]),
+        tokens: str(flags["tokens"]),
+        weights: str(flags["weights"]),
+        targetShareValue: str(flags["target-share-value"]),
+        driftThreshold: str(flags["drift-threshold"]),
+        minBuyRatio: str(flags["min-buy-ratio"]),
+        priceStaleness: str(flags["price-staleness"]),
+        confirm: flags["confirm"] === true,
+      });
+    case "zap":
+      return zap(opts, sel, positional[0], {
+        shares: str(flags["shares"]),
+        maxUsdgIn: str(flags["max-usdg-in"]),
+        minUsdgOut: str(flags["min-usdg-out"]),
+        receiver: str(flags["receiver"]),
+        zapper: str(flags["zapper"]),
+        confirm: flags["confirm"] === true,
+      });
+    case "mint":
+      return mint(opts, sel, {
+        shares: str(flags["shares"]),
+        receiver: str(flags["receiver"]),
+        approve: flags["approve"] === true,
+        confirm: flags["confirm"] === true,
+      });
+    case "redeem":
+      return redeemCmd(opts, sel, {
+        shares: str(flags["shares"]),
+        receiver: str(flags["receiver"]),
+        confirm: flags["confirm"] === true,
+      });
+    case "approve":
+      return approve(opts, sel, {
+        token: str(flags["token"]),
+        spender: str(flags["spender"]),
+        amount: str(flags["amount"]),
+        all: flags["all"] === true,
+        shareToken: flags["share-token"] === true,
+        forShares: str(flags["for-shares"]),
+        confirm: flags["confirm"] === true,
+      });
+    case "balances":
+      return balances(opts, sel, positional[0], str(flags["shares"]));
     case "deploy":
       return deploy(opts, sel, {
         script: str(flags["script"]),

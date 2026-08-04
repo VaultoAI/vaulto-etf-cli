@@ -2,9 +2,9 @@
  * Configuration — env loading + validation. No secrets are ever printed.
  *
  * The CLI reads chain data directly on-chain via viem, so it needs an RPC URL
- * per chain (with public fallbacks). Write operations (rebalance, deploy) need
- * a PRIVATE_KEY; deploy/keeper shell-outs need a local clone of the
- * Vaulto-ETF-V2 repo at VAULTO_V2_DIR.
+ * per chain (with public fallbacks). Write operations (rebalance, deploy, zap,
+ * factory create) need a PRIVATE_KEY; deploy/keeper shell-outs need a local
+ * clone of DavidVaulto/ETFs at VAULTO_V2_DIR (name kept for back-compat).
  */
 
 import "dotenv/config";
@@ -27,14 +27,14 @@ export function hasCustomRpc(chain: ChainInfo): boolean {
 
 /**
  * Resolve the signer private key. Throws ConfigError if missing — only
- * write commands (rebalance start/settle) require it.
+ * write commands require it.
  */
 export function requireSigner(): `0x${string}` {
   const pk = process.env.PRIVATE_KEY;
   if (!pk) {
     throw new ConfigError(
       "Missing PRIVATE_KEY. Set it in your environment or a .env file. " +
-        "Required only for write operations (rebalance start/settle, deploy)."
+        "Required only for write operations (rebalance, deploy, factory create, zap)."
     );
   }
   if (!/^0x[0-9a-fA-F]{64}$/.test(pk)) {
@@ -49,15 +49,15 @@ export function hasSigner(): boolean {
 }
 
 /**
- * Resolve the path to a local Vaulto-ETF-V2 checkout — required for `deploy`
- * (forge scripts) and `keeper` (npm scripts). Throws if unset or missing.
+ * Resolve the path to a local DavidVaulto/ETFs (or Vaulto-ETF-V2) checkout —
+ * required for `deploy` (forge scripts) and `keeper` (npm scripts).
  */
 export function requireV2Dir(): string {
   const dir = process.env.VAULTO_V2_DIR;
   if (!dir) {
     throw new ConfigError(
-      "Missing VAULTO_V2_DIR. Set it to a local clone of github.com/VaultoAI/Vaulto-ETF-V2. " +
-        "Required for `deploy` and `keeper`."
+      "Missing VAULTO_V2_DIR. Set it to a local clone of github.com/DavidVaulto/ETFs " +
+        "(or VaultoAI/Vaulto-ETF-V2). Required for `deploy` and `keeper`."
     );
   }
   if (!existsSync(dir)) {

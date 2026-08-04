@@ -10,8 +10,11 @@ export async function state(opts: OutputOpts, sel: Selector): Promise<void> {
 
   emit(s, opts, (d: typeof s) => {
     const lines = [
-      `${d.vault.name} (${d.vault.symbol})  [${d.vault.slug} @ ${d.vault.chain}]`,
+      `${d.vault.name} (${d.vault.symbol})  [${d.vault.slug} @ ${d.vault.chain} · ${d.vault.kind}]`,
       `Vault:        ${d.vault.vaultAddress}`,
+      d.vault.controllerAddress ? `Controller:   ${d.vault.controllerAddress}` : "Controller:   (none — V4 handler)",
+      `Handler:      ${d.vault.handlerAddress}`,
+      d.vault.zapperAddress ? `Zapper:       ${d.vault.zapperAddress}` : null,
       `TVL:          ${usd(d.vault.tvlUsd)}`,
       `Supply:       ${d.vault.totalSupply}`,
       `Share price:  ${usd(d.vault.sharePriceUsd)}`,
@@ -19,7 +22,7 @@ export async function state(opts: OutputOpts, sel: Selector): Promise<void> {
       `Drift thresh: ${d.vault.driftThresholdPct.toFixed(2)}%   Min buy: ${d.vault.minBuyRatioPct.toFixed(2)}%`,
       "",
       `${pad("ASSET", 9)}${pad("TARGET", 9)}${pad("CURRENT", 9)}${pad("DRIFT", 9)}${pad("PRICE", 14)}VALUE`,
-    ];
+    ].filter((x): x is string => x !== null);
     for (const a of d.basket) {
       lines.push(
         pad(a.symbol, 9) +

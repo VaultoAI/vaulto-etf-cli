@@ -1,24 +1,53 @@
 {
   "name": "vaulto-etf-cli",
-  "version": "0.1.0",
-  "description": "Agent-first CLI for Vaulto V2 on-chain basket ETFs. Reads vault state directly on-chain (Base + BNB), triggers rebalances, deploys vaults, and runs the keeper.",
+  "version": "0.2.0",
+  "description": "Agent-first CLI for Vaulto on-chain basket ETFs. Mint/redeem shares, zap USDG, rebalance, factory, keeper — Base + BNB + Robinhood Chain.",
   "type": "module",
   "bin": {
     "vaulto-etf": "dist/cli.js"
   },
+  "main": "dist/cli.js",
   "files": [
     "dist",
     "AGENTS.md",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
     "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VaultoAI/vaulto-etf-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/VaultoAI/vaulto-etf-cli/issues"
+  },
+  "homepage": "https://github.com/VaultoAI/vaulto-etf-cli#readme",
+  "keywords": [
+    "vaulto",
+    "etf",
+    "defi",
+    "cli",
+    "agent",
+    "viem",
+    "basket",
+    "rebalance",
+    "base",
+    "bnb",
+    "robinhood"
+  ],
+  "author": "Vaulto",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
