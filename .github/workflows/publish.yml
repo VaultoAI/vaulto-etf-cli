@@ -1,0 +1,50 @@
+# Publish @vaultoai/etf-cli to GitHub Packages under VaultoAI.
+#
+# Triggers:
+#   - push of version tags: v0.3.2
+#   - manual workflow_dispatch
+#
+# Consumers:
+#   echo "@vaultoai:registry=https://npm.pkg.github.com" >> ~/.npmrc
+#   # optional auth for private packages; public packages may still need a GH token
+#   npm install -g @vaultoai/etf-cli
+
+name: Publish npm package
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional git tag to associate (informational)"
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@vaultoai"
+
+      - name: Install + build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

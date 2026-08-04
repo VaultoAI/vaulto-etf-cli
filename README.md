@@ -1,4 +1,4 @@
-# etf-cli
+# @vaultoai/etf-cli
 
 **Agent-first CLI** for Vaulto on-chain basket ETFs
 ([DavidVaulto/ETFs](https://github.com/DavidVaulto/ETFs)).
@@ -12,18 +12,23 @@ and **Robinhood Chain**. No backend API; all reads/writes are on-chain (viem).
 
 ## Install
 
+Package **`@vaultoai/etf-cli`** is published to **GitHub Packages** under the VaultoAI org.
+Binary: **`vaulto-cli`**.
+
 ```bash
-# package name: etf-cli  →  binary: vaulto-cli
-npm install -g etf-cli
+# Configure npm for the @vaultoai scope (once per machine)
+echo "@vaultoai:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN" >> ~/.npmrc
+# Token needs read:packages — https://github.com/settings/tokens
 
-# one-shot
-npx etf-cli doctor
+npm install -g @vaultoai/etf-cli
+npx @vaultoai/etf-cli doctor
 
-# from GitHub if not yet on the registry
+# Or install from the git repo (no Packages auth)
 npm install -g github:VaultoAI/vaulto-etf-cli
 ```
 
-Requires Node 18+. After install the binary is **`vaulto-cli`**.
+Requires Node 18+.
 
 ```bash
 vaulto-cli doctor

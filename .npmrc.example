@@ -1,0 +1,7 @@
+# Install @vaultoai/* packages from GitHub Packages (VaultoAI org).
+@vaultoai:registry=https://npm.pkg.github.com
+
+# GitHub Packages requires a token (classic PAT or fine-grained with packages:read).
+# Public packages under GitHub still typically need auth for npm clients.
+# Create a token at https://github.com/settings/tokens with at least read:packages
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}

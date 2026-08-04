@@ -10,14 +10,22 @@ everything is **on-chain via viem** (Base, BNB Chain, Robinhood Chain).
 
 ## Install (first step)
 
+Package: **`@vaultoai/etf-cli`** (GitHub Packages · VaultoAI)  
+Binary: **`vaulto-cli`**
+
 ```bash
-# npm package: etf-cli  →  binary: vaulto-cli
-npm install -g etf-cli
+# 1) Point npm at VaultoAI's GitHub Packages scope
+echo "@vaultoai:registry=https://npm.pkg.github.com" >> ~/.npmrc
+# 2) Auth (any GitHub PAT with read:packages; required by GH Packages npm)
+echo "//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN" >> ~/.npmrc
 
-# one-shot
-npx etf-cli doctor
+# 3) Install
+npm install -g @vaultoai/etf-cli
 
-# from GitHub if not yet on the registry
+# one-shot (after .npmrc is set)
+npx @vaultoai/etf-cli doctor
+
+# alternative: install straight from the git repo (no Packages auth)
 npm install -g github:VaultoAI/vaulto-etf-cli
 ```
 

@@ -9,13 +9,20 @@ export async function describe(opts: OutputOpts): Promise<void> {
     {
       tool: "vaulto-cli",
       description:
-        "Agent CLI for Vaulto on-chain basket ETFs. Install: npm i -g etf-cli  OR  npx etf-cli. " +
+        "Agent CLI for Vaulto on-chain basket ETFs. Install: npm i -g @vaultoai/etf-cli  OR  npx @vaultoai/etf-cli. " +
         "JSON stdout, errors on stderr. Reads vaults on Base/BNB/RH; mint/redeem shares; zap USDG on RH; rebalance; factory; deploy; keeper. " +
         "Start with: vaulto-cli describe | vaulto-cli doctor | vaulto-cli vaults.",
       install: {
-        npm: "npm install -g etf-cli",
-        npx: "npx etf-cli <command>",
+        package: "@vaultoai/etf-cli",
+        binary: "vaulto-cli",
+        registry: "https://npm.pkg.github.com",
+        npm: "npm install -g @vaultoai/etf-cli",
+        npx: "npx @vaultoai/etf-cli <command>",
         github: "npm install -g github:VaultoAI/vaulto-etf-cli",
+        npmrc: [
+          "@vaultoai:registry=https://npm.pkg.github.com",
+          "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}",
+        ],
         docs: "AGENTS.md (shipped with package)",
       },
       userFlows: {
