@@ -1,4 +1,4 @@
-# vaulto-etf-cli
+# @vaulto/etf-cli
 
 **Agent-first CLI** for Vaulto on-chain basket ETFs
 ([DavidVaulto/ETFs](https://github.com/DavidVaulto/ETFs)).
@@ -13,22 +13,22 @@ and **Robinhood Chain**. No backend API; all reads/writes are on-chain (viem).
 ## Install
 
 ```bash
-# npm (when published)
-npm install -g vaulto-etf-cli
-
-# from GitHub
-npm install -g github:VaultoAI/vaulto-etf-cli
+# scoped package (preferred)
+npm install -g @vaulto/etf-cli
 
 # one-shot
-npx github:VaultoAI/vaulto-etf-cli doctor
+npx @vaulto/etf-cli doctor
+
+# from GitHub if not yet on the registry
+npm install -g github:VaultoAI/vaulto-etf-cli
 ```
 
-Requires Node 18+.
+Requires Node 18+. After install the binary is **`vaulto-cli`**.
 
 ```bash
-vaulto-etf doctor
-vaulto-etf describe    # machine schema
-vaulto-etf vaults      # deposit addresses
+vaulto-cli doctor
+vaulto-cli describe    # machine schema
+vaulto-cli vaults      # deposit addresses
 ```
 
 ## Configure
@@ -48,33 +48,33 @@ VAULTO_V2_DIR=…         # only for deploy + keeper
 ### Mint shares (deposit)
 
 ```bash
-vaulto-etf preview-mint --shares 1000000000000000000 --vault vMAG7
-vaulto-etf balances --shares 1000000000000000000 --vault vMAG7
-vaulto-etf mint --shares 1000000000000000000 --vault vMAG7 --approve          # dry-run
-vaulto-etf mint --shares 1000000000000000000 --vault vMAG7 --approve --confirm
+vaulto-cli preview-mint --shares 1000000000000000000 --vault vMAG7
+vaulto-cli balances --shares 1000000000000000000 --vault vMAG7
+vaulto-cli mint --shares 1000000000000000000 --vault vMAG7 --approve          # dry-run
+vaulto-cli mint --shares 1000000000000000000 --vault vMAG7 --approve --confirm
 ```
 
 RH single-asset (USDG):
 
 ```bash
-vaulto-etf approve --token USDG --spender zapper --vault vMAG7-RH --confirm
-vaulto-etf zap mint --shares 1000000000000000000 --max-usdg-in 30000000 \
+vaulto-cli approve --token USDG --spender zapper --vault vMAG7-RH --confirm
+vaulto-cli zap mint --shares 1000000000000000000 --max-usdg-in 30000000 \
   --vault vMAG7-RH --confirm
 ```
 
 ### Sell shares (redeem)
 
 ```bash
-vaulto-etf preview-redeem --shares 1000000000000000000 --vault vMAG7
-vaulto-etf redeem --shares 1000000000000000000 --vault vMAG7 --confirm
+vaulto-cli preview-redeem --shares 1000000000000000000 --vault vMAG7
+vaulto-cli redeem --shares 1000000000000000000 --vault vMAG7 --confirm
 ```
 
 ### Inspect
 
 ```bash
-vaulto-etf state --vault vMAG7-RH --human
-vaulto-etf rebalance status --vault vMAG7
-vaulto-etf factory list --chain rh
+vaulto-cli state --vault vMAG7-RH --human
+vaulto-cli rebalance status --vault vMAG7
+vaulto-cli factory list --chain rh
 ```
 
 Writes are **dry-run unless `--confirm`**. Default output is **JSON** for agents;

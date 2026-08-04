@@ -13,11 +13,11 @@ class InputError extends Error {
  * token is needed for direct redeem (unlike zap redeem).
  *
  * Flow:
- *   1. vaulto-etf position <addr> --vault X
- *   2. vaulto-etf preview-redeem --shares N --vault X
- *   3. vaulto-etf redeem --shares N --vault X --confirm
+ *   1. vaulto-cli position <addr> --vault X
+ *   2. vaulto-cli preview-redeem --shares N --vault X
+ *   3. vaulto-cli redeem --shares N --vault X --confirm
  *
- * On RH with USDG out, prefer: vaulto-etf zap redeem.
+ * On RH with USDG out, prefer: vaulto-cli zap redeem.
  */
 export async function redeemCmd(opts, sel, flags) {
     const v = resolveVault(sel);
@@ -40,7 +40,7 @@ export async function redeemCmd(opts, sel, flags) {
             receiver,
             note: "Burns shares from the signer and sends basket tokens to --receiver. " +
                 "Re-run with --confirm to send. No token approvals needed for direct redeem. " +
-                "For single-asset USDG on RH: vaulto-etf zap redeem.",
+                "For single-asset USDG on RH: vaulto-cli zap redeem.",
             assetsReturned: preview.assets.map((a) => ({
                 symbol: a.symbol,
                 token: a.token,

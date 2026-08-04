@@ -28,9 +28,9 @@ export interface MintFlags {
  * Mint vault shares by depositing proportional basket tokens.
  *
  * Flow for agents:
- *   1. vaulto-etf preview-mint --shares N --vault X
- *   2. vaulto-etf balances --shares N --vault X   (check wallet funding + allowances)
- *   3. vaulto-etf mint --shares N --vault X --approve --confirm
+ *   1. vaulto-cli preview-mint --shares N --vault X
+ *   2. vaulto-cli balances --shares N --vault X   (check wallet funding + allowances)
+ *   3. vaulto-cli mint --shares N --vault X --approve --confirm
  *
  * Caller must hold every basket asset. --approve sets infinite ERC-20 allowance
  * on the vault for each asset first.
@@ -61,7 +61,7 @@ export async function mint(opts: OutputOpts, sel: Selector, flags: MintFlags): P
         note:
           "Deposit EACH listed asset to the vault address (via approve + depositExactForShares). " +
           "Re-run with --confirm to send. Add --approve to infinite-approve basket tokens first. " +
-          "On RH with USDG, prefer: vaulto-etf zap mint (single-asset).",
+          "On RH with USDG, prefer: vaulto-cli zap mint (single-asset).",
         assetsRequired: preview.assets.map((a) => ({
           symbol: a.symbol,
           token: a.token,

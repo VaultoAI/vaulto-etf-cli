@@ -43,8 +43,8 @@ export async function rebalance(opts, sel, sub, flags) {
                 ? `Active order: sell ${d.active.sellAmount} ${d.active.sellToken} -> >=${d.active.minBuyAmount} ${d.active.buyToken} (validTo ${d.active.validTo})`
                 : "Active order: none",
             d.kind === "v4"
-                ? "Note: V4 vaults use `rebalance execute` (atomic Uniswap swap). Prefer `vaulto-etf keeper`."
-                : "Note: CoW vaults use start → CoW API → settle. Prefer `vaulto-etf keeper`.",
+                ? "Note: V4 vaults use `rebalance execute` (atomic Uniswap swap). Prefer `vaulto-cli keeper`."
+                : "Note: CoW vaults use start → CoW API → settle. Prefer `vaulto-cli keeper`.",
         ].join("\n"));
         return;
     }
@@ -89,7 +89,7 @@ export async function rebalance(opts, sel, sub, flags) {
                     sellAmount: params.sellAmount.toString(),
                     minBuyAmount: params.minBuyAmount.toString(),
                 },
-                note: "Re-run with --confirm to send. Prefer `vaulto-etf keeper` (handles CoW API + settle).",
+                note: "Re-run with --confirm to send. Prefer `vaulto-cli keeper` (handles CoW API + settle).",
             }, opts);
             return;
         }
@@ -119,7 +119,7 @@ export async function rebalance(opts, sel, sub, flags) {
                     sellAmount: params.sellAmount.toString(),
                     minBuyAmount: params.minBuyAmount.toString(),
                 },
-                note: "Re-run with --confirm to send. Requires PRIVATE_KEY with EXECUTOR_ROLE on the V4 handler. Prefer `vaulto-etf keeper`.",
+                note: "Re-run with --confirm to send. Requires PRIVATE_KEY with EXECUTOR_ROLE on the V4 handler. Prefer `vaulto-cli keeper`.",
             }, opts);
             return;
         }

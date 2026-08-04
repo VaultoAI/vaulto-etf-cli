@@ -46,25 +46,25 @@ export const COMMANDS: CommandSpec[] = [
     name: "doctor",
     summary: "Check RPC reachability per chain + config presence (never prints the key).",
     needsSigner: false,
-    example: "vaulto-etf doctor",
+    example: "vaulto-cli doctor",
   },
   {
     name: "vaults",
     summary: "List all registered vaults across chains with addresses, kind (cow|v4), and explorer links.",
     needsSigner: false,
-    example: "vaulto-etf vaults",
+    example: "vaulto-cli vaults",
   },
   {
     name: "tokens",
     summary: "Token registry (address, decimals, price feed) for a chain.",
     needsSigner: false,
-    example: "vaulto-etf tokens --chain rh",
+    example: "vaulto-cli tokens --chain rh",
   },
   {
     name: "state",
     summary: "Live on-chain vault state: basket, target/current weights, drift, TVL, share price.",
     needsSigner: false,
-    example: "vaulto-etf state --vault vMAG7-RH",
+    example: "vaulto-cli state --vault vMAG7-RH",
   },
   {
     name: "preview-mint",
@@ -79,7 +79,7 @@ export const COMMANDS: CommandSpec[] = [
         example: "--shares 1000000000000000000",
       },
     ],
-    example: "vaulto-etf preview-mint --shares 1000000000000000000 --vault vDTF2",
+    example: "vaulto-cli preview-mint --shares 1000000000000000000 --vault vDTF2",
   },
   {
     name: "preview-redeem",
@@ -94,14 +94,14 @@ export const COMMANDS: CommandSpec[] = [
         example: "--shares 1000000000000000000",
       },
     ],
-    example: "vaulto-etf preview-redeem --shares 1000000000000000000 --vault vBNB1",
+    example: "vaulto-cli preview-redeem --shares 1000000000000000000 --vault vBNB1",
   },
   {
     name: "position",
     summary: "A wallet's vault position: shares, % of supply, pro-rata underlying holdings.",
     needsSigner: false,
     positional: { name: "address", required: true, description: "0x wallet address." },
-    example: "vaulto-etf position 0x1234...abcd --vault vDTF2",
+    example: "vaulto-cli position 0x1234...abcd --vault vDTF2",
   },
   {
     name: "balances",
@@ -116,7 +116,7 @@ export const COMMANDS: CommandSpec[] = [
         description: "Share quantity to size a mint check (uint256, 18 decimals).",
       },
     ],
-    example: "vaulto-etf balances --shares 1000000000000000000 --vault vMAG7",
+    example: "vaulto-cli balances --shares 1000000000000000000 --vault vMAG7",
   },
   {
     name: "approve",
@@ -137,7 +137,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: "--for-shares", takesValue: true, description: "With --all, size min allowances for this mint size." },
       { name: "--confirm", takesValue: false, description: "Send the approve tx(s)." },
     ],
-    example: "vaulto-etf approve --all --vault vMAG7",
+    example: "vaulto-cli approve --all --vault vMAG7",
   },
   {
     name: "mint",
@@ -155,7 +155,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: "--approve", takesValue: false, description: "Approve all basket tokens to the vault before minting." },
       { name: "--confirm", takesValue: false, description: "Send the deposit tx. Without it, dry run." },
     ],
-    example: "vaulto-etf mint --shares 1000000000000000000 --vault vMAG7 --approve",
+    example: "vaulto-cli mint --shares 1000000000000000000 --vault vMAG7 --approve",
   },
   {
     name: "redeem",
@@ -172,7 +172,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: "--receiver", takesValue: true, description: "Address to receive basket tokens (default: signer)." },
       { name: "--confirm", takesValue: false, description: "Send the redeem tx. Without it, dry run." },
     ],
-    example: "vaulto-etf redeem --shares 1000000000000000000 --vault vMAG7",
+    example: "vaulto-cli redeem --shares 1000000000000000000 --vault vMAG7",
   },
   {
     name: "rebalance",
@@ -188,7 +188,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: "--valid-for", takesValue: true, description: "[start] Order validity window in seconds. Default 1800." },
       { name: "--confirm", takesValue: false, description: "Actually send the tx. Without it, the command is a dry run." },
     ],
-    example: "vaulto-etf rebalance status --vault vMAG7-RH",
+    example: "vaulto-cli rebalance status --vault vMAG7-RH",
   },
   {
     name: "factory",
@@ -217,7 +217,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: "--price-staleness", takesValue: true, description: "[create] Seconds. Default 172800 (2d)." },
       { name: "--confirm", takesValue: false, description: "Actually send createETF. Without it, dry run." },
     ],
-    example: "vaulto-etf factory list --chain rh",
+    example: "vaulto-cli factory list --chain rh",
   },
   {
     name: "zap",
@@ -237,7 +237,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: "--zapper", takesValue: true, description: "Override zapper address (default: vault's registered zapper)." },
       { name: "--confirm", takesValue: false, description: "Actually send the tx. Without it, dry run." },
     ],
-    example: "vaulto-etf zap preview-mint --shares 1000000000000000000 --vault vMAG7-RH",
+    example: "vaulto-cli zap preview-mint --shares 1000000000000000000 --vault vMAG7-RH",
   },
   {
     name: "deploy",
@@ -256,7 +256,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: "--broadcast", takesValue: false, description: "Add --broadcast + --slow to the forge command (live deploy)." },
       { name: "--confirm", takesValue: false, description: "Execute the forge command. Without it, only prints it." },
     ],
-    example: "vaulto-etf deploy --script DeployV3RHMag7 --chain rh",
+    example: "vaulto-cli deploy --script DeployV3RHMag7 --chain rh",
   },
   {
     name: "keeper",
@@ -268,12 +268,12 @@ export const COMMANDS: CommandSpec[] = [
       required: false,
       description: "check (dry run, default) | tick (one rebalance) | loop (forever)",
     },
-    example: "vaulto-etf keeper check --vault vMAG7-RH",
+    example: "vaulto-cli keeper check --vault vMAG7-RH",
   },
   {
     name: "describe",
     summary: "Dump this command schema as JSON for agent introspection.",
     needsSigner: false,
-    example: "vaulto-etf describe",
+    example: "vaulto-cli describe",
   },
 ];

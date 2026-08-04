@@ -1,4 +1,4 @@
-# vaulto-etf — agent guide
+# vaulto-cli — agent guide
 
 Agent-first CLI for **Vaulto on-chain basket ETFs**
 ([DavidVaulto/ETFs](https://github.com/DavidVaulto/ETFs) contracts).
@@ -11,22 +11,22 @@ everything is **on-chain via viem** (Base, BNB Chain, Robinhood Chain).
 ## Install (first step)
 
 ```bash
-# preferred once published
-npm install -g vaulto-etf-cli
+# preferred (scoped package)
+npm install -g @vaulto/etf-cli
 
-# from GitHub (always works)
+# one-shot
+npx @vaulto/etf-cli doctor
+
+# from GitHub if registry package is not yet published
 npm install -g github:VaultoAI/vaulto-etf-cli
-
-# one-shot without install
-npx github:VaultoAI/vaulto-etf-cli doctor
 ```
 
-Binary name: **`vaulto-etf`**.
+Binary name: **`vaulto-cli`** (not `vaulto-etf`).
 
 ```bash
-vaulto-etf doctor      # RPC + config check
-vaulto-etf describe    # FULL command schema as JSON — read this first if unsure
-vaulto-etf vaults      # every registered ETF + deposit addresses
+vaulto-cli doctor      # RPC + config check
+vaulto-cli describe    # FULL command schema as JSON — read this first if unsure
+vaulto-cli vaults      # every registered ETF + deposit addresses
 ```
 
 Optional env (`.env` or process env):
@@ -48,7 +48,7 @@ Optional env (`.env` or process env):
 | Human mode | `--human` (optional; default is JSON) |
 | No prompts | Missing flags → error, never a question |
 | Writes | **Dry-run by default**. Only `--confirm` sends a tx |
-| Schema | `vaulto-etf describe` |
+| Schema | `vaulto-cli describe` |
 
 Shares are **18 decimals**: `1 share = 1000000000000000000`.
 
@@ -64,7 +64,7 @@ Shares are **18 decimals**: `1 share = 1000000000000000000`.
 | `vMAG7` | bnb | cow | `0x765ce7c25e561c2695741fcf245594f1497198a3` | Mag7 Ondo stocks |
 | `vMAG7-RH` | rh | v4 | `0x9f1BbE4a60D5311E2Eff35Db384A7aA82D7Cdbb3` | Mag7 RH stocks + **zapper** `0x0fA89eEc…` |
 
-Always re-check with `vaulto-etf vaults` (source of truth in the CLI registry).
+Always re-check with `vaulto-cli vaults` (source of truth in the CLI registry).
 
 Target: `--vault <slug>` or `--chain <slug>` (default vault: `vDTF2`).
 
@@ -78,17 +78,17 @@ Multi-asset path (all vaults):
 
 ```bash
 # 1) How much of each asset is required?
-vaulto-etf preview-mint --shares 1000000000000000000 --vault vMAG7
+vaulto-cli preview-mint --shares 1000000000000000000 --vault vMAG7
 
 # 2) Does the wallet hold enough + have allowances?
-vaulto-etf balances --shares 1000000000000000000 --vault vMAG7
+vaulto-cli balances --shares 1000000000000000000 --vault vMAG7
 # (uses PRIVATE_KEY address, or pass 0x… as first arg)
 
 # 3) Dry-run mint (shows deposit address = vault + each token amount)
-vaulto-etf mint --shares 1000000000000000000 --vault vMAG7 --approve
+vaulto-cli mint --shares 1000000000000000000 --vault vMAG7 --approve
 
 # 4) Execute: approve basket tokens to vault, then depositExactForShares
-vaulto-etf mint --shares 1000000000000000000 --vault vMAG7 --approve --confirm
+vaulto-cli mint --shares 1000000000000000000 --vault vMAG7 --approve --confirm
 ```
 
 **What “deposit” means:** caller must hold each basket ERC-20, **approve the vault** as spender, then call `depositExactForShares(shares, receiver)`. The CLI does that. Tokens go **to the vault contract**, not to an EOA treasury.
@@ -96,18 +96,18 @@ vaulto-etf mint --shares 1000000000000000000 --vault vMAG7 --approve --confirm
 RH single-asset path (USDG only) — preferred on `vMAG7-RH`:
 
 ```bash
-vaulto-etf zap preview-mint --shares 1000000000000000000 --vault vMAG7-RH
-vaulto-etf approve --token USDG --spender zapper --vault vMAG7-RH --confirm
-vaulto-etf zap mint --shares 1000000000000000000 --max-usdg-in 30000000 --vault vMAG7-RH --confirm
+vaulto-cli zap preview-mint --shares 1000000000000000000 --vault vMAG7-RH
+vaulto-cli approve --token USDG --spender zapper --vault vMAG7-RH --confirm
+vaulto-cli zap mint --shares 1000000000000000000 --max-usdg-in 30000000 --vault vMAG7-RH --confirm
 ```
 
 ### B. Sell / redeem shares (burn shares → get assets back)
 
 ```bash
-vaulto-etf position 0xWALLET --vault vMAG7
-vaulto-etf preview-redeem --shares 1000000000000000000 --vault vMAG7
-vaulto-etf redeem --shares 1000000000000000000 --vault vMAG7          # dry-run
-vaulto-etf redeem --shares 1000000000000000000 --vault vMAG7 --confirm
+vaulto-cli position 0xWALLET --vault vMAG7
+vaulto-cli preview-redeem --shares 1000000000000000000 --vault vMAG7
+vaulto-cli redeem --shares 1000000000000000000 --vault vMAG7          # dry-run
+vaulto-cli redeem --shares 1000000000000000000 --vault vMAG7 --confirm
 ```
 
 Direct redeem burns shares from the **signer** and sends basket tokens to `--receiver` (default: signer). **No approve** needed.
@@ -115,17 +115,17 @@ Direct redeem burns shares from the **signer** and sends basket tokens to `--rec
 RH single-asset USDG out:
 
 ```bash
-vaulto-etf approve --share-token --spender zapper --vault vMAG7-RH --confirm
-vaulto-etf zap redeem --shares 1000000000000000000 --min-usdg-out 1 --vault vMAG7-RH --confirm
+vaulto-cli approve --share-token --spender zapper --vault vMAG7-RH --confirm
+vaulto-cli zap redeem --shares 1000000000000000000 --min-usdg-out 1 --vault vMAG7-RH --confirm
 ```
 
 ### C. Inspect any ETF
 
 ```bash
-vaulto-etf state --vault vMAG7-RH          # TVL, weights, drift, share price
-vaulto-etf rebalance status --vault vMAG7
-vaulto-etf tokens --chain rh
-vaulto-etf factory list --chain rh         # permissionless ETFs on RH
+vaulto-cli state --vault vMAG7-RH          # TVL, weights, drift, share price
+vaulto-cli rebalance status --vault vMAG7
+vaulto-cli tokens --chain rh
+vaulto-cli factory list --chain rh         # permissionless ETFs on RH
 ```
 
 ---

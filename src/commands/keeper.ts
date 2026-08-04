@@ -82,7 +82,7 @@ export async function keeper(opts: OutputOpts, sel: Selector, mode: string | und
     throw Object.assign(
       new Error(
         `CoW keeper is hard-wired to Base (chainId 8453). Vault ${v.slug} is on ${chain.slug} (${chain.id}). ` +
-          `RH V4 vaults: vaulto-etf keeper --vault vMAG7-RH. BNB CoW needs a multi-chain-aware keeper fork.`
+          `RH V4 vaults: vaulto-cli keeper --vault vMAG7-RH. BNB CoW needs a multi-chain-aware keeper fork.`
       ),
       { code: "KEEPER_CHAIN_UNSUPPORTED" }
     );

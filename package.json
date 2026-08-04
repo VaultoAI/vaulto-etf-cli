@@ -1,10 +1,10 @@
 {
-  "name": "vaulto-etf-cli",
-  "version": "0.2.0",
+  "name": "@vaulto/etf-cli",
+  "version": "0.3.0",
   "description": "Agent-first CLI for Vaulto on-chain basket ETFs. Mint/redeem shares, zap USDG, rebalance, factory, keeper — Base + BNB + Robinhood Chain.",
   "type": "module",
   "bin": {
-    "vaulto-etf": "dist/cli.js"
+    "vaulto-cli": "dist/cli.js"
   },
   "main": "dist/cli.js",
   "files": [

@@ -6,7 +6,7 @@ class InputError extends Error {
 }
 export async function position(opts, sel, address) {
     if (!address)
-        throw new InputError("Missing address argument. Usage: vaulto-etf position 0x...");
+        throw new InputError("Missing address argument. Usage: vaulto-cli position 0x...");
     if (!/^0x[0-9a-fA-F]{40}$/.test(address))
         throw new InputError(`Invalid 0x address: ${address}`);
     const v = resolveVault(sel);

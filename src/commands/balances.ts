@@ -14,8 +14,8 @@ class InputError extends Error {
  * Show a wallet's basket-token balances + allowances toward the vault.
  * With --shares N, also shows amounts needed to mint and whether funded/approved.
  *
- *   vaulto-etf balances --vault vMAG7
- *   vaulto-etf balances 0xYou --shares 1000000000000000000 --vault vDTF2
+ *   vaulto-cli balances --vault vMAG7
+ *   vaulto-cli balances 0xYou --shares 1000000000000000000 --vault vDTF2
  */
 export async function balances(
   opts: OutputOpts,
@@ -34,7 +34,7 @@ export async function balances(
     address = privateKeyToAccount(requireSigner()).address;
   } else {
     throw new InputError(
-      "Provide a wallet address or set PRIVATE_KEY. Usage: vaulto-etf balances [0x…] [--shares N] --vault X"
+      "Provide a wallet address or set PRIVATE_KEY. Usage: vaulto-cli balances [0x…] [--shares N] --vault X"
     );
   }
 

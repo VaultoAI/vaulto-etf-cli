@@ -9,10 +9,10 @@ class InputError extends Error {
 /**
  * Approve ERC-20 spending for vault deposits or zapper flows.
  *
- *   vaulto-etf approve --all --vault vMAG7 --confirm
- *   vaulto-etf approve --token USDC --vault vDTF2 --confirm
- *   vaulto-etf approve --token USDG --spender zapper --vault vMAG7-RH --confirm
- *   vaulto-etf approve --share-token --spender zapper --vault vMAG7-RH --confirm
+ *   vaulto-cli approve --all --vault vMAG7 --confirm
+ *   vaulto-cli approve --token USDC --vault vDTF2 --confirm
+ *   vaulto-cli approve --token USDG --spender zapper --vault vMAG7-RH --confirm
+ *   vaulto-cli approve --share-token --spender zapper --vault vMAG7-RH --confirm
  */
 export async function approve(opts, sel, flags) {
     const v = resolveVault(sel);

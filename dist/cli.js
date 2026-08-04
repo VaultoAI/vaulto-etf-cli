@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * vaulto-etf — agent-first CLI for Vaulto on-chain basket ETFs
+ * vaulto-cli — agent-first CLI for Vaulto on-chain basket ETFs
  * (DavidVaulto/ETFs: Base + BNB + Robinhood Chain).
  *
  * Reads vault data directly on-chain (viem). Design for agents: JSON stdout by
@@ -79,9 +79,9 @@ function str(v) {
 }
 function printHelp() {
     const lines = [
-        "vaulto-etf — agent CLI for Vaulto on-chain basket ETFs (Base + BNB + Robinhood)",
+        "vaulto-cli — agent CLI for Vaulto on-chain basket ETFs (Base + BNB + Robinhood)",
         "",
-        "Usage: vaulto-etf <command> [--vault <slug>] [--chain <slug>] [flags]",
+        "Usage: vaulto-cli <command> [--vault <slug>] [--chain <slug>] [flags]",
         "",
         "Commands:",
     ];
@@ -94,7 +94,7 @@ function printHelp() {
     for (const f of GLOBAL_FLAGS) {
         lines.push(`  ${f.name.padEnd(gw)}${f.description}`);
     }
-    lines.push("", "Run `vaulto-etf describe` for the full JSON schema.");
+    lines.push("", "Run `vaulto-cli describe` for the full JSON schema.");
     process.stdout.write(lines.join("\n") + "\n");
 }
 async function main() {
@@ -193,7 +193,7 @@ async function main() {
         case "describe":
             return describe(opts);
         default:
-            throw Object.assign(new Error(`Unknown command: ${command}. Run \`vaulto-etf help\`.`), {
+            throw Object.assign(new Error(`Unknown command: ${command}. Run \`vaulto-cli help\`.`), {
                 code: "UNKNOWN_COMMAND",
             });
     }
